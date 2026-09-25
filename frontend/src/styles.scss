@@ -1,0 +1,32 @@
+@use '@angular/material' as mat;
+@use './theme-colors' as theme-colors;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: theme-colors.$primary-palette,
+        tertiary: theme-colors.$tertiary-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // SLA state colours. Always pair with a text label, never colour alone.
+  --sla-on-track: #2e7d32;
+  --sla-at-risk: #b26a00;
+  --sla-breached: #c62828;
+  --sla-met: #757575;
+  --sla-paused: #546e7a;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+  height: 100%;
+}

@@ -1,0 +1,70 @@
+<main class="login-page">
+  <header class="brand">
+    <mat-icon class="brand-icon">support_agent</mat-icon>
+    <h1>SLA Desk</h1>
+    <p>Tickets, SLAs and escalations at a glance.</p>
+  </header>
+
+  <mat-card class="login-card" appearance="outlined">
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <section class="demo" aria-labelledby="demo-heading">
+      <h2 id="demo-heading">Demo login</h2>
+      <p class="hint">One click signs you in as a seeded demo user.</p>
+      <div class="demo-grid">
+        @for (account of demoAccounts; track account.email) {
+          <button
+            mat-flat-button
+            class="demo-button"
+            type="button"
+            [disabled]="loading()"
+            (click)="demoLogin(account)"
+          >
+            <mat-icon>{{ account.icon }}</mat-icon>
+            <span class="demo-label">{{ account.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <div class="divider"><span>or sign in with email</span></div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>Email is required</mat-error>
+        } @else if (form.controls.email.hasError('email')) {
+          <mat-error>Enter a valid email</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [type]="hidePassword() ? 'password' : 'text'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword.set(!hidePassword())"
+          [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </button>
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-stroked-button type="submit" [disabled]="loading()">Sign in</button>
+    </form>
+  </mat-card>
+</main>

@@ -1,0 +1,58 @@
+<mat-toolbar class="toolbar">
+  <a class="brand" routerLink="/tickets">
+    <mat-icon>support_agent</mat-icon>
+    <span>SLA Desk</span>
+  </a>
+
+  <nav class="nav-desktop" aria-label="Main">
+    @for (link of links(); track link.path) {
+      <a mat-button [routerLink]="link.path" routerLinkActive="active">
+        <mat-icon>{{ link.icon }}</mat-icon>
+        {{ link.label }}
+      </a>
+    }
+  </nav>
+
+  <span class="spacer"></span>
+
+  @if (user(); as u) {
+    <div class="user-desktop">
+      <span class="user-name">{{ u.fullName }}</span>
+      <span class="role-chip">{{ u.role }}</span>
+      <button mat-stroked-button type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+
+    <div class="user-mobile">
+      <span class="role-chip">{{ u.role }}</span>
+      <button mat-icon-button type="button" [matMenuTriggerFor]="menu" aria-label="Open menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
+
+    <mat-menu #menu="matMenu" xPosition="before">
+      <div class="menu-user" mat-menu-item disabled>
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ u.fullName }}</span>
+      </div>
+      <mat-divider />
+      @for (link of links(); track link.path) {
+        <a mat-menu-item [routerLink]="link.path" routerLinkActive="active">
+          <mat-icon>{{ link.icon }}</mat-icon>
+          <span>{{ link.label }}</span>
+        </a>
+      }
+      <mat-divider />
+      <button mat-menu-item type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  }
+</mat-toolbar>
+
+<main class="content">
+  <router-outlet />
+</main>
