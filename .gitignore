@@ -1,0 +1,14 @@
+# Java
+target/
+*.class
+# IDE
+.idea/
+*.iml
+.vscode/
+# Node / Angular
+node_modules/
+dist/
+.angular/
+# Secrets and OS
+.env
+.DS_Store

@@ -1,0 +1,4 @@
+ALTER TABLE users                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sla_policies          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tickets               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ticket_events         ENABLE ROW LEVEL SECURITY;

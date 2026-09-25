@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: sla-desk
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5        # Supabase free tier has few connections
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # Flyway creates tables, Hibernate only checks them
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}              # Render provides PORT
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-minutes: 480       # 8 hours
+  cors:
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:4200}
+  typesafe:
+    api-key: ${TYPESAFE_API_KEY:}
+    base-url: https://api.typesafe.ai
+    model: jev-latest
+  seed-demo-data: ${SEED_DEMO_DATA:false}
