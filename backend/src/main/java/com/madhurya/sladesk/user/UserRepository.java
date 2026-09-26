@@ -1,6 +1,6 @@
 package com.madhurya.sladesk.user;
 
-import jdk.jfr.Category;
+import com.madhurya.sladesk.ticket.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
