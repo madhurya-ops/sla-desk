@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -190,13 +190,18 @@ export class TicketDetail {
       });
   }
 
-  protected reassign(assigneeId: number): void {
+  protected reassign(change: MatSelectChange<number>): void {
     const t = this.ticket();
+    const assigneeId = change.value;
     if (!t || t.assignee?.id === assigneeId) return;
-    this.write(this.api.assign(t.id, { assigneeId }), (updated) =>
-      this.snackBar.open(`Assigned to ${updated.assignee?.fullName ?? 'nobody'}`, undefined, {
-        duration: 3000,
-      }),
+    this.write(
+      this.api.assign(t.id, { assigneeId }),
+      (updated) =>
+        this.snackBar.open(`Assigned to ${updated.assignee?.fullName ?? 'nobody'}`, undefined, {
+          duration: 3000,
+        }),
+      // [value] is unchanged after a failure, so Angular won't re-apply it; undo the pick by hand.
+      () => (change.source.value = this.ticket()?.assignee?.id),
     );
   }
 
@@ -207,7 +212,11 @@ export class TicketDetail {
     this.write(this.api.comment(t.id, { message }), () => this.commentForm.reset());
   }
 
-  private write(request: Observable<TicketDetailDto>, done?: (t: TicketDetailDto) => void): void {
+  private write(
+    request: Observable<TicketDetailDto>,
+    done?: (t: TicketDetailDto) => void,
+    failed?: () => void,
+  ): void {
     this.writeSeq++;
     this.busy.set(true);
     request.subscribe({
@@ -220,6 +229,7 @@ export class TicketDetail {
       // The error interceptor shows ProblemDetail.detail; re-sync in case the ticket moved on.
       error: () => {
         this.busy.set(false);
+        failed?.();
         const t = this.ticket();
         if (t) this.load(t.id).subscribe((fresh) => this.ticket.set(fresh));
       },

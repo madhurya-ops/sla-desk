@@ -1,4 +1,9 @@
 package com.madhurya.sladesk.triage.dto;
 
-public class JevAnswer {
-}
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.Map;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record JevAnswer(String type, String choice, Double noul, Double score,
+                        Double confidence, Map<String, Double> probabilities) {}

@@ -62,7 +62,7 @@
           <mat-select
             [value]="t.assignee?.id"
             [disabled]="busy() || t.status === 'RESOLVED'"
-            (selectionChange)="reassign($event.value)"
+            (selectionChange)="reassign($event)"
           >
             @for (u of assignees(); track u.id) {
               <mat-option [value]="u.id">{{ u.fullName }}</mat-option>

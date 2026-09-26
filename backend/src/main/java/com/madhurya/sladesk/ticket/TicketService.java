@@ -14,6 +14,7 @@ import com.madhurya.sladesk.ticket.dto.CreateTicketRequest;
 import com.madhurya.sladesk.ticket.dto.TicketDetailDto;
 import com.madhurya.sladesk.ticket.dto.TicketSummaryDto;
 import com.madhurya.sladesk.ticket.dto.UpdateStatusRequest;
+import com.madhurya.sladesk.triage.TriageService;
 import com.madhurya.sladesk.triage.dto.TriageResult;
 import com.madhurya.sladesk.user.Role;
 import com.madhurya.sladesk.user.User;
@@ -41,12 +42,13 @@ public class TicketService {
     private final SlaCalculator sla;
     private final TicketMapper mapper;
     private final CurrentUser currentUser;
+    private final TriageService triageService;
 
 
     @Transactional
     public TicketDetailDto create(CreateTicketRequest req) {
         User creator = currentUser.get();
-        TriageResult ai = TriageResult.unavailable();
+        TriageResult ai = triageService.triage(req.title(), req.description());
 
         Priority priority = req.priority() != null ? req.priority()
                 : ai.available() ? ai.priority() : Priority.P3;
