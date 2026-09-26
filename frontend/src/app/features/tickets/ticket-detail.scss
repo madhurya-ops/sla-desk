@@ -1,0 +1,161 @@
+.progress-slot {
+  height: 4px;
+  margin: -12px 0 8px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+
+  h1 {
+    margin: 2px 0 8px;
+    font: var(--mat-sys-headline-small);
+    overflow-wrap: anywhere;
+  }
+}
+
+.ticket-id {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.status {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--mat-sys-outline);
+  font: var(--mat-sys-label-large);
+}
+
+.status-resolved {
+  border-color: var(--sla-met);
+  color: var(--sla-met);
+}
+
+.assignee,
+.note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.note {
+  margin: 0 0 16px;
+}
+
+.panel {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-lowest);
+
+  h2 {
+    margin: 0 0 12px;
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+
+  .secondary {
+    --mat-button-filled-container-color: var(--mat-sys-secondary-container);
+    --mat-button-filled-label-text-color: var(--mat-sys-on-secondary-container);
+  }
+
+  .reassign {
+    margin-left: auto;
+    width: 240px;
+  }
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.description {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 12px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  // On phones the AI context sits right under the actions, above the long activity feed.
+  .side {
+    order: -1;
+  }
+
+  .toolbar {
+    button {
+      flex: 1 1 auto;
+    }
+
+    .reassign {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  .comment {
+    flex-direction: column;
+    align-items: stretch;
+
+    button {
+      margin-top: 0;
+    }
+  }
+}

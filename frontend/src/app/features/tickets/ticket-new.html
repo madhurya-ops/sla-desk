@@ -1,0 +1,110 @@
+<header class="page-header">
+  <a mat-icon-button routerLink="/tickets" aria-label="Back to tickets">
+    <mat-icon>arrow_back</mat-icon>
+  </a>
+  <h1>New ticket</h1>
+</header>
+
+<div class="layout">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <mat-form-field appearance="outline">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" maxlength="200" autocomplete="off" />
+      <mat-hint align="end">{{ form.controls.title.value.length }}/200</mat-hint>
+      @if (form.controls.title.hasError('required')) {
+        <mat-error>Title is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="6"></textarea>
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Description is required</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="selects">
+      <mat-form-field appearance="outline">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          @for (p of priorities; track p) {
+            <mat-option [value]="p">{{ p }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.priority.hasError('required')) {
+          <mat-error>Choose a priority</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="category">
+          @for (c of categories; track c) {
+            <mat-option [value]="c">{{ categoryLabels[c] }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.category.hasError('required')) {
+          <mat-error>Choose a category</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="actions">
+      <a mat-button routerLink="/tickets">Cancel</a>
+      <button mat-flat-button type="submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <mat-spinner diameter="18" />
+        }
+        Create ticket
+      </button>
+    </div>
+  </form>
+
+  <aside class="ai-panel" aria-live="polite" aria-labelledby="ai-heading">
+    <h2 id="ai-heading"><mat-icon>smart_toy</mat-icon> AI suggestion</h2>
+    <div class="progress-slot">
+      @if (triaging()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+    </div>
+
+    @if (triage(); as t) {
+      @if (t.available) {
+        <dl class="suggestion">
+          <div>
+            <dt>Priority</dt>
+            <dd>{{ t.priority }} · {{ percent(t.priorityConfidence ?? 0) }}</dd>
+          </div>
+          <div>
+            <dt>Team</dt>
+            <dd>
+              {{ t.category ? categoryLabels[t.category] : '—' }} ·
+              {{ percent(t.categoryConfidence ?? 0) }}
+            </dd>
+          </div>
+        </dl>
+        @if ((t.businessImpact ?? 0) >= highImpact) {
+          <div class="banner danger" role="alert">
+            <mat-icon>e911_emergency</mat-icon>
+            High business impact: this ticket will be escalated immediately
+          </div>
+        }
+        @if (t.needsTriage) {
+          <div class="banner warn">
+            <mat-icon>help</mat-icon>
+            Low confidence: please check priority and team
+          </div>
+        }
+      } @else {
+        <div class="banner muted">
+          <mat-icon>cloud_off</mat-icon>
+          <span>AI triage unavailable. Defaulted to P3 / Application.</span>
+        </div>
+      }
+      <p class="hint">The selects are pre-filled from this suggestion; you can change them.</p>
+    } @else {
+      <p class="hint">Fill in the title and description to get a suggested priority and team.</p>
+    }
+  </aside>
+</div>

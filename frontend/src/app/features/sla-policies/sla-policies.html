@@ -1,0 +1,82 @@
+<header class="page-header">
+  <h1>SLA policies</h1>
+  <p class="hint">
+    <mat-icon aria-hidden="true">info</mat-icon>
+    Changes apply to new tickets only. Existing tickets keep the SLA they were created with.
+  </p>
+</header>
+
+@if (loading()) {
+  <app-page-state kind="loading" message="Loading SLA policies…" />
+} @else if (failed()) {
+  <app-page-state kind="error" message="Couldn't load SLA policies.">
+    <button mat-stroked-button type="button" (click)="load()">Retry</button>
+  </app-page-state>
+} @else if (rows()?.length) {
+  <div class="policies" role="table" aria-label="SLA policies">
+    <div class="row head" role="row">
+      <span role="columnheader">Priority</span>
+      <span role="columnheader">Resolution time (minutes)</span>
+      <span role="columnheader">At risk at (% of time used)</span>
+      <span role="columnheader"><span class="cdk-visually-hidden">Save</span></span>
+    </div>
+
+    @for (row of rows() ?? []; track row.priority) {
+      @let f = row.form.controls;
+      <form class="row" role="row" [formGroup]="row.form" (ngSubmit)="save(row)">
+        <span role="cell" class="priority">
+          <app-priority-chip [priority]="row.priority" />
+        </span>
+
+        <span role="cell">
+          <mat-form-field appearance="outline">
+            <mat-label>Minutes</mat-label>
+            <input matInput type="number" min="1" step="1" formControlName="resolutionMinutes" />
+            @if (f.resolutionMinutes.valid) {
+              <mat-hint>= {{ formatMinutes(f.resolutionMinutes.value) }}</mat-hint>
+            } @else {
+              <mat-error>Whole minutes, at least 1</mat-error>
+            }
+          </mat-form-field>
+        </span>
+
+        <span role="cell">
+          <mat-form-field appearance="outline">
+            <mat-label>At risk %</mat-label>
+            <input
+              matInput
+              type="number"
+              min="1"
+              max="99"
+              step="1"
+              formControlName="atRiskPercent"
+            />
+            <span matTextSuffix>%</span>
+            @if (f.atRiskPercent.valid) {
+              <mat-hint>
+                @if (f.resolutionMinutes.valid) {
+                  at {{ formatMinutes((f.resolutionMinutes.value * f.atRiskPercent.value) / 100) }}
+                }
+              </mat-hint>
+            } @else {
+              <mat-error>Whole number, 1 to 99</mat-error>
+            }
+          </mat-form-field>
+        </span>
+
+        <span role="cell" class="actions">
+          <button
+            mat-flat-button
+            type="submit"
+            [disabled]="row.form.pristine || row.form.invalid || saving() !== null"
+          >
+            <mat-icon>save</mat-icon>
+            {{ saving() === row.priority ? 'Saving…' : 'Save' }}
+          </button>
+        </span>
+      </form>
+    }
+  </div>
+} @else {
+  <app-page-state kind="empty" icon="timer_off" message="No SLA policies are configured yet." />
+}

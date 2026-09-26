@@ -1,0 +1,120 @@
+<div class="progress-slot">
+  @if (busy()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (notFound()) {
+  <app-page-state kind="empty" icon="search_off" [message]="'Ticket #' + id() + ' was not found.'">
+    <a mat-stroked-button routerLink="/tickets">Back to tickets</a>
+  </app-page-state>
+} @else if (ticket(); as t) {
+  @if (failed() && lastUpdated(); as since) {
+    <app-stale-banner [since]="since" />
+  }
+  <header class="header">
+    <a mat-icon-button routerLink="/tickets" aria-label="Back to tickets">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div class="heading">
+      <span class="ticket-id">#{{ t.id }} · {{ categoryLabels[t.category] }}</span>
+      <h1>{{ t.title }}</h1>
+      <div class="chips">
+        <app-priority-chip [priority]="t.priority" />
+        <span class="status" [class]="'status-' + t.status.toLowerCase()">{{
+          statusLabels[t.status]
+        }}</span>
+        <app-sla-badge [ticket]="t" />
+        <app-ticket-flags [ticket]="t" />
+      </div>
+      <p class="assignee">
+        <mat-icon>person</mat-icon>
+        @if (t.assignee) {
+          {{ t.assignee.fullName }}
+        } @else {
+          <em>Unassigned</em>
+        }
+      </p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <app-sla-progress [ticket]="t" />
+  </section>
+
+  @if (actions().length || canReassign()) {
+    <section class="toolbar" aria-label="Ticket actions">
+      @for (a of actions(); track a.status) {
+        <button
+          mat-flat-button
+          type="button"
+          [class.secondary]="a.status === 'ON_HOLD'"
+          [disabled]="busy()"
+          (click)="changeStatus(a)"
+        >
+          <mat-icon>{{ a.icon }}</mat-icon>
+          {{ a.label }}
+        </button>
+      }
+      @if (canReassign()) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="reassign">
+          <mat-label>Reassign</mat-label>
+          <mat-select
+            [value]="t.assignee?.id"
+            [disabled]="busy() || t.status === 'RESOLVED'"
+            (selectionChange)="reassign($event.value)"
+          >
+            @for (u of assignees(); track u.id) {
+              <mat-option [value]="u.id">{{ u.fullName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </section>
+  } @else if (t.status !== 'RESOLVED' && !canAct()) {
+    <p class="note">
+      <mat-icon>lock</mat-icon> Only the assigned agent or a lead can change this ticket's status.
+    </p>
+  }
+
+  <div class="columns">
+    <div class="main">
+      <section class="panel">
+        <h2>Description</h2>
+        <p class="description">{{ t.description }}</p>
+        <p class="meta">Opened by {{ t.createdBy.fullName }}</p>
+      </section>
+
+      <section class="panel">
+        <h2>Activity</h2>
+        <form class="comment" [formGroup]="commentForm" (ngSubmit)="postComment()">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Add a comment</mat-label>
+            <textarea matInput formControlName="message" rows="2"></textarea>
+          </mat-form-field>
+          <button
+            mat-flat-button
+            type="submit"
+            [disabled]="busy() || !commentForm.value.message?.trim()"
+          >
+            <mat-icon>send</mat-icon>
+            Post
+          </button>
+        </form>
+        <app-ticket-timeline [events]="t.events" />
+      </section>
+    </div>
+
+    <aside class="side">
+      <section class="panel">
+        <app-ticket-ai-panel [ticket]="t" />
+      </section>
+    </aside>
+  </div>
+} @else if (failed()) {
+  <app-page-state kind="error" message="Couldn't load this ticket. We'll keep retrying.">
+    <button mat-stroked-button type="button" (click)="retry()">Retry now</button>
+  </app-page-state>
+} @else {
+  <app-page-state kind="loading" message="Loading ticket…" />
+}

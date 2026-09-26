@@ -1,0 +1,152 @@
+<header class="page-header">
+  <h1>Tickets</h1>
+  <a mat-flat-button routerLink="/tickets/new">
+    <mat-icon>add</mat-icon>
+    New ticket
+  </a>
+</header>
+
+<section class="filters" aria-label="Filters">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Status</mat-label>
+    <mat-select
+      [value]="filters().status ?? ''"
+      (selectionChange)="setFilter('status', $event.value)"
+    >
+      <mat-option value="">All</mat-option>
+      @for (status of statuses; track status) {
+        <mat-option [value]="status">{{ statusLabels[status] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>SLA state</mat-label>
+    <mat-select
+      [value]="filters().slaState ?? ''"
+      (selectionChange)="setFilter('slaState', $event.value)"
+    >
+      <mat-option value="">All</mat-option>
+      @for (state of slaStates; track state) {
+        <mat-option [value]="state">{{ slaStateLabels[state] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Priority</mat-label>
+    <mat-select
+      [value]="filters().priority ?? ''"
+      (selectionChange)="setFilter('priority', $event.value)"
+    >
+      <mat-option value="">All</mat-option>
+      @for (priority of priorities; track priority) {
+        <mat-option [value]="priority">{{ priority }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-slide-toggle [checked]="!!filters().mine" (change)="setFilter('mine', $event.checked)">
+    My tickets
+  </mat-slide-toggle>
+</section>
+
+<div class="progress-slot">
+  @if (loading() && tickets() !== null) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (tickets() !== null && failed() && lastUpdated(); as since) {
+  <app-stale-banner [since]="since" />
+}
+
+@if (tickets(); as list) {
+  @if (list.length === 0) {
+    @if (hasFilters()) {
+      <app-page-state kind="empty" icon="filter_alt_off" message="No tickets match these filters.">
+        <button mat-stroked-button type="button" (click)="clearFilters()">Clear filters</button>
+      </app-page-state>
+    } @else {
+      <app-page-state kind="empty" message="No tickets yet.">
+        <a mat-stroked-button routerLink="/tickets/new">Create the first ticket</a>
+      </app-page-state>
+    }
+  } @else if (isMobile()) {
+    <ul class="cards">
+      @for (ticket of list; track ticket.id) {
+        <li>
+          <a class="card" [class]="rowClass(ticket)" [routerLink]="['/tickets', ticket.id]">
+            <div class="card-top">
+              <app-priority-chip [priority]="ticket.priority" />
+              <span class="card-title">{{ ticket.title }}</span>
+              <app-ticket-flags [ticket]="ticket" />
+            </div>
+            <div class="card-meta">
+              <span>{{ categoryLabels[ticket.category] }}</span>
+              <span>{{ statusLabels[ticket.status] }}</span>
+              <span [class.muted]="!ticket.assignee">{{
+                ticket.assignee?.fullName ?? 'Unassigned'
+              }}</span>
+            </div>
+            <app-sla-badge [ticket]="ticket" />
+          </a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <table mat-table [dataSource]="list" [trackBy]="trackById" class="ticket-table">
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let t"><app-priority-chip [priority]="t.priority" /></td>
+      </ng-container>
+
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Title</th>
+        <td mat-cell *matCellDef="let t" class="title-cell">
+          <a [routerLink]="['/tickets', t.id]" (click)="$event.stopPropagation()">{{ t.title }}</a>
+          <app-ticket-flags [ticket]="t" />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>Category</th>
+        <td mat-cell *matCellDef="let t">{{ categoryLabels[t.category] }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t">{{ statusLabels[t.status] }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="assignee">
+        <th mat-header-cell *matHeaderCellDef>Assignee</th>
+        <td mat-cell *matCellDef="let t" [class.muted]="!t.assignee">
+          {{ t.assignee?.fullName ?? 'Unassigned' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="sla">
+        <th mat-header-cell *matHeaderCellDef>SLA</th>
+        <td mat-cell *matCellDef="let t"><app-sla-badge [ticket]="t" /></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: columns"
+        [class]="rowClass(row)"
+        (click)="open(row)"
+      ></tr>
+    </table>
+  }
+} @else if (failed()) {
+  <app-page-state
+    kind="error"
+    message="Couldn't load tickets. Check your connection; we'll keep retrying."
+  >
+    <button mat-stroked-button type="button" (click)="retry()">Retry now</button>
+  </app-page-state>
+} @else {
+  <app-page-state kind="loading" message="Loading tickets…" />
+}

@@ -19,7 +19,9 @@ spring:
     enabled: true
 
 server:
-  port: ${PORT:8080}              # Render provides PORT
+  port: ${PORT:8080}
+  error:
+    include-stacktrace: never             # Render provides PORT
 
 management:
   endpoints:

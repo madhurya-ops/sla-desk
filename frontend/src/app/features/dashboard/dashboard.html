@@ -1,0 +1,72 @@
+<header class="page-header">
+  <h1>Dashboard</h1>
+  <span class="hint">Refreshes every 10 seconds</span>
+</header>
+
+@if (!loaded()) {
+  <app-page-state kind="loading" message="Loading dashboard…" />
+} @else {
+  @if (summary(); as s) {
+    @if (summaryFailed() && lastUpdated(); as since) {
+      <app-stale-banner [since]="since" />
+    }
+    <section class="kpis" aria-label="Key figures">
+      @for (k of kpis(); track k.label) {
+        <div class="kpi" [class]="'tone-' + k.tone">
+          <div class="kpi-label">
+            <mat-icon aria-hidden="true">{{ k.icon }}</mat-icon>
+            {{ k.label }}
+          </div>
+          <div class="kpi-value">{{ k.value }}</div>
+        </div>
+      }
+    </section>
+
+    <section class="panel">
+      <h2>Unresolved tickets by priority</h2>
+      <app-sla-by-priority-chart [byPriority]="s.byPriority" />
+    </section>
+  } @else {
+    <section class="panel">
+      <app-page-state
+        kind="error"
+        message="Couldn't load the dashboard summary. We'll keep retrying."
+      >
+        <button mat-stroked-button type="button" (click)="retry()">Retry now</button>
+      </app-page-state>
+    </section>
+  }
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Most urgent open tickets</h2>
+      <a routerLink="/tickets">All tickets</a>
+    </div>
+    @if (urgent(); as list) {
+      @if (list.length) {
+        <ul class="urgent">
+          @for (t of list; track t.id) {
+            <li>
+              <a [routerLink]="['/tickets', t.id]">
+                <app-priority-chip [priority]="t.priority" />
+                <span class="title">{{ t.title }}</span>
+                <span class="assignee">{{ t.assignee?.fullName ?? 'Unassigned' }}</span>
+                <app-sla-badge [ticket]="t" />
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-page-state
+          kind="empty"
+          icon="task_alt"
+          message="No open tickets. Nothing is waiting on an SLA."
+        />
+      }
+    } @else {
+      <app-page-state kind="error" message="Couldn't load tickets.">
+        <button mat-stroked-button type="button" (click)="retry()">Retry now</button>
+      </app-page-state>
+    }
+  </section>
+}
